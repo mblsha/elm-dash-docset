@@ -12,7 +12,7 @@ require 'rubysh'
 ROOT = File.absolute_path(File.join(File.dirname(__FILE__), 'docroot'))
 package_template = ERB.new(File.read(File.join(ROOT, 'templates', 'package.erb.html')))
 module_template = ERB.new(File.read(File.join(ROOT, 'templates', 'module.erb.html')))
-index_array = []
+$index_array = []
 
 def build_elm_files
   Dir.chdir(File.join(ROOT, '..', 'package.elm-lang.org')) do
@@ -30,16 +30,35 @@ def escape_module(name)
   return name.gsub(/[.]/, '-')
 end
 
+def index_module_dict(module_dict, module_index_html_path, section)
+  types = {
+    'types' => 'Type',
+    'aliases' => 'Type',  # Alias?
+    'values' => 'Function',
+  }
+
+  module_dict[section].each do |i|
+    name = i['name']
+    $index_array += [{
+      'type' => types[section],
+      'name' => name,
+      'path' => "#{module_index_html_path}##{name}"
+    }]
+  end
+end
+
 all_packages = Curl.get('http://library.elm-lang.org/all-packages')
 all_packages_dict = JSON::Ext::Parser.new(all_packages.body_str).parse()
 all_packages_dict.each do |package|
-  name = package['name']
-  version = package['versions'].first
+  # name = package['name']
+  # version = package['versions'].first
+  name = 'elm-lang/core'
+  version = '1.1.0'
 
   package_path = File.join(ROOT, 'packages', name, version)
   FileUtils::mkdir_p package_path
 
-  index_array += [{
+  $index_array += [{
     'type' => 'Package',
     'name' => "#{name}/#{version}",
     'path' => "#{package_path}/index.html"
@@ -63,24 +82,29 @@ all_packages_dict.each do |package|
   documentation_json.each do |module_dict|
     module_name = module_dict['name'] #
     module_path = File.join(package_path, escape_module(module_name))
-    index_array += [{
+    $index_array += [{
       'type' => 'Module',
       'name' => module_name,
       'path' => "#{module_path}/index.html"
     }]
 
     FileUtils::mkdir_p(module_path)
-    File.open(File.join(module_path, 'index.html'), 'wb') do |f|
+    module_index_html_path = File.join(module_path, 'index.html')
+    File.open(module_index_html_path, 'wb') do |f|
       erb_user, erb_name = name.split('/')
       erb_version = version
       erb_module_name = module_name
       f.write module_template.result(binding)
     end
+
+    index_module_dict(module_dict, module_index_html_path, 'aliases')
+    index_module_dict(module_dict, module_index_html_path, 'types')
+    index_module_dict(module_dict, module_index_html_path, 'values')
   end
 
   break
 end
 
 File.open(File.join(ROOT, 'index.json'), 'wb') do |f|
-  f.write JSON.pretty_generate(index_array)
+  f.write JSON.pretty_generate($index_array)
 end
