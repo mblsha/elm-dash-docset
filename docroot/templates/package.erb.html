@@ -28,6 +28,6 @@ pre {
 <script src="/assets/highlight/highlight.pack.js"></script>
 <script src="/artifacts/Page-Package.js"></script>
 </head><body><script>
-var context = { user: "elm-lang", name: "core", version: "1.1.0", versionList: ["1.1.0","1.0.0"] };
+var context = { user: "<%= erb_user %>", name: "<%= erb_name %>", version: "<%= erb_version %>", versionList: ["<%= erb_version %>"] };
 var page = Elm.fullscreen(Elm.Page.Package, { context: context });
 </script></body></html>
