@@ -1,0 +1,38 @@
+#### ToDo
+1. Fork https://github.com/elm-lang/package.elm-lang.org
+3. Remove Google Analytics: backend/ServeFile.hs
+2. Patch Package.elm / Module.elm to remove Google Analytics
+
+3. download http://library.elm-lang.org/all-packages
+4. parse to extract all PackageNames/LatestVersions
+5. create htmls for:
+  - Packages
+	- Modules
+
+3. download documentation.json for supported packages
+4. parse documentation.json
+  - top-level dictionaries are Package
+	  - "types" are Types: package-name/version/TypeName
+		- "values" are Functions: package-name/version/TypeName#ValueName
+
+https://github.com/hpyhacking/erlang-docset/blob/master/generate.sh
+
+Package: package-name/version
+Type: package-name/version/TypeName
+Function: package-name/version/TypeName#ValueName
+
+#### How it works:
+List of third-party packages:
+http://library.elm-lang.org/all-packages
+
+Full docs for specified package:
+http://library.elm-lang.org/packages/elm-lang/core/1.1.0/documentation.json
+http://library.elm-lang.org/packages/Dandandan/Easing/1.0.1/documentation.json
+
+Page-Package.js:
+http://library.elm-lang.org/packages/elm-lang/core/1.1.0
+var context = { user: "elm-lang", name: "core", version: "1.1.0", versionList: ["1.1.0","1.0.0"] };
+
+Page-Module.js:
+http://library.elm-lang.org/packages/elm-lang/core/1.1.0/Array
+var context = { user: "elm-lang", name: "core", version: "1.1.0", versionList: ["1.1.0","1.0.0"], moduleName: "Array" };
