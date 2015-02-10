@@ -26,8 +26,13 @@ pre {
 </style>
 <link rel="stylesheet" href="/assets/highlight/styles/default.css">
 <script src="/assets/highlight/highlight.pack.js"></script>
-<script src="/artifacts/Page-Package.js"></script>
+<script src="/artifacts/Page-Module.js"></script>
 </head><body><script>
-	var context = { user: "<%= erb_user %>", name: "<%= erb_name %>", version: "<%= erb_version %>", versionList: ["<%= erb_version %>"] };
-	var page = Elm.fullscreen(Elm.Page.Package, { context: context });
+  var context = { user: "<%= erb_user %>", name: "<%= erb_name %>", version: "<%= erb_version %>", versionList: ["<%= erb_user %>"], moduleName: "<%= erb_module_name %>" };
+  var page = Elm.fullscreen(Elm.Page.Module, { context: context });
+  page.ports.docsLoaded.subscribe(function() {
+      if (window.location.hash) {
+          setTimeout(function() { window.location = window.location.hash; }, 0);
+      }
+  });
 </script></body></html>

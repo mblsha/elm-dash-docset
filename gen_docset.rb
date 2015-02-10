@@ -11,6 +11,7 @@ require 'rubysh'
 
 ROOT = File.absolute_path(File.join(File.dirname(__FILE__), 'docroot'))
 package_template = ERB.new(File.read(File.join(ROOT, 'templates', 'package.erb.html')))
+module_template = ERB.new(File.read(File.join(ROOT, 'templates', 'module.erb.html')))
 
 def build_elm_files
   Dir.chdir(File.join(ROOT, '..', 'package.elm-lang.org')) do
@@ -22,6 +23,10 @@ def build_elm_files
       cmd.run
     end
   end
+end
+
+def escape_module(name)
+  return name.gsub(/[.]/, '-')
 end
 
 all_packages = Curl.get('http://library.elm-lang.org/all-packages')
@@ -37,6 +42,7 @@ all_packages_dict.each do |package|
   # next if File.exist? documentation_path
 
   documentation = Curl.get("http://library.elm-lang.org/packages/#{name}/#{version}/documentation.json")
+  documentation_json = JSON::Ext::Parser.new(documentation.body_str).parse()
   File.open(documentation_path, 'wb') do |f|
     f.write documentation.body_str
   end
@@ -45,6 +51,18 @@ all_packages_dict.each do |package|
     erb_user, erb_name = name.split('/')
     erb_version = version
     f.write package_template.result(binding)
+  end
+
+  documentation_json.each do |module_dict|
+    module_name = module_dict['name'] #
+    module_path = File.join(package_path, escape_module(module_name))
+    FileUtils::mkdir_p(module_path)
+    File.open(File.join(module_path, 'index.html'), 'wb') do |f|
+      erb_user, erb_name = name.split('/')
+      erb_version = version
+      erb_module_name = module_name
+      f.write module_template.result(binding)
+    end
   end
 
   break
