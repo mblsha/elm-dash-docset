@@ -54,11 +54,12 @@ end
 
 def create_index_sql
   sql = []
-  sql += ['CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);']
-  sql += ['CREATE UNIQUE INDEX anchor ON searchIndex (name, type, path);']
+  sql += ['CREATE TABLE IF NOT EXISTS searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);']
+  sql += ['CREATE UNIQUE INDEX IF NOT EXISTS anchor ON searchIndex (name, type, path);']
   $index_array.each do |i|
+    name = i['name']
     path = i['path'].gsub(ROOT, '')
-    sql += ["INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('#{i['name']}', '#{i['type']}', '#{path}');"]
+    sql += ["INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES (\"#{name}\", \"#{i['type']}\", \"#{path}\");"]
   end
   return sql.join("\n")
 end
@@ -135,4 +136,6 @@ File.open(File.join(ROOT, 'index.json'), 'wb') do |f|
 end
 
 build_elm_files
-print create_index_sql
+
+sqlite = Rubysh('sqlite3', File.join(ROOT, 'docSet.dsidx'), Rubysh.<<< create_index_sql)
+sqlite.run
