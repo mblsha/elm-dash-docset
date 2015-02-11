@@ -97,7 +97,6 @@ all_packages_dict.each do |package|
   end
 
   documentation_path = File.join(package_path, 'documentation.json')
-  # next if File.exist? documentation_path
 
   documentation = Curl.get("http://library.elm-lang.org/packages/#{name}/#{version}/documentation.json")
   documentation_json = JSON::Ext::Parser.new(documentation.body_str).parse()
@@ -140,10 +139,6 @@ all_packages_dict.each do |package|
 
   break
 end
-
-# File.open(File.join(ROOT, 'index.json'), 'wb') do |f|
-#   f.write JSON.pretty_generate($index_array)
-# end
 
 build_elm_files
 
