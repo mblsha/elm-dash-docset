@@ -1594,17 +1594,7 @@ Elm.Component.Header.make = function (_elm) {
             switch (maybeModule.ctor)
             {case "Just":
                return A2($Text.link,
-                 A2($Basics._op["++"],
-                 "/packages/",
-                 A2($Basics._op["++"],
-                 user,
-                 A2($Basics._op["++"],
-                 "/",
-                 A2($Basics._op["++"],
-                 $package,
-                 A2($Basics._op["++"],
-                 "/",
-                 version))))),
+                 "../index.html",
                  $Text.fromString($package));
                case "Nothing":
                return $Text.fromString($package);}
@@ -1958,7 +1948,7 @@ Elm.Component.TopBar.make = function (_elm) {
                       A3($Graphics$Element.image,
                       logoSize,
                       logoSize,
-                      "/assets/elm_logo.svg")))
+                      "../../../../../assets/elm_logo.svg")))
                       ,A2($Graphics$Element.link,
                       "/packages",
                       A2(bar,
@@ -6585,7 +6575,7 @@ Elm.Native.Http.make = function(elm) {
 
         request.onreadystatechange = function(e) {
             if (request.readyState === 4) {
-                response.value = (request.status >= 200 && request.status < 300 ?
+                response.value = ((request.status == 0 || (request.status >= 200 && request.status < 300)) ?
                                   { ctor:'Success', _0:request.responseText } :
                                   { ctor:'Failure', _0:request.status, _1:request.statusText });
                 setTimeout(function() { updateQueue(queue,responses); }, 0);
@@ -11487,12 +11477,8 @@ Elm.Page.Module.make = function (_elm) {
    var documentationUrl = function () {
       var name = moduleNameToUrl(context.moduleName);
       return A2($Basics._op["++"],
-      packageUrl(context.version),
-      A2($Basics._op["++"],
-      "/docs/",
-      A2($Basics._op["++"],
       name,
-      ".json")));
+      ".json");
    }();
    var dummyDocs = A5($Component$Documentation.Documentation,
    context.moduleName,

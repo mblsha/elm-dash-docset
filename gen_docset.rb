@@ -22,6 +22,11 @@ def build_elm_files
       js_output = File.join(ROOT, pair[1])
       cmd = Rubysh('elm-make', pair[0], '--yes', "--output=#{js_output}")
       cmd.run
+
+      patched_contents = File.read(js_output).gsub(
+        '(request.status >= 200 && request.status < 300 ?',
+        '((request.status == 0 || (request.status >= 200 && request.status < 300)) ?')
+      File.write(js_output, patched_contents)
     end
   end
 end
@@ -47,22 +52,38 @@ def index_module_dict(module_dict, module_index_html_path, section)
   end
 end
 
+def create_index_sql
+  sql = []
+  sql += ['CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);']
+  sql += ['CREATE UNIQUE INDEX anchor ON searchIndex (name, type, path);']
+  $index_array.each do |i|
+    path = i['path'].gsub(ROOT, '')
+    sql += ["INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('#{i['name']}', '#{i['type']}', '#{path}');"]
+  end
+  return sql.join("\n")
+end
+
 all_packages = Curl.get('http://library.elm-lang.org/all-packages')
 all_packages_dict = JSON::Ext::Parser.new(all_packages.body_str).parse()
 all_packages_dict.each do |package|
-  # name = package['name']
-  # version = package['versions'].first
-  name = 'elm-lang/core'
-  version = '1.1.0'
+  name = package['name']
+  version = package['versions'].first
+  # name = 'elm-lang/core'
+  # version = '1.1.0'
 
   package_path = File.join(ROOT, 'packages', name, version)
   FileUtils::mkdir_p package_path
 
   $index_array += [{
     'type' => 'Package',
-    'name' => "#{name}/#{version}",
+    'name' => name,
     'path' => "#{package_path}/index.html"
   }]
+
+  readme = Curl.get("http://library.elm-lang.org/packages/#{name}/#{version}/README.md")
+  if readme.status == '200 OK'
+    File.write(File.join(package_path, 'README.md'), readme.body_str)
+  end
 
   documentation_path = File.join(package_path, 'documentation.json')
   # next if File.exist? documentation_path
@@ -97,6 +118,10 @@ all_packages_dict.each do |package|
       f.write module_template.result(binding)
     end
 
+    File.open(File.join(module_path, escape_module(module_name) + '.json'), 'wb') do |f|
+      f.write JSON.dump(module_dict)
+    end
+
     index_module_dict(module_dict, module_index_html_path, 'aliases')
     index_module_dict(module_dict, module_index_html_path, 'types')
     index_module_dict(module_dict, module_index_html_path, 'values')
@@ -108,3 +133,6 @@ end
 File.open(File.join(ROOT, 'index.json'), 'wb') do |f|
   f.write JSON.pretty_generate($index_array)
 end
+
+build_elm_files
+print create_index_sql

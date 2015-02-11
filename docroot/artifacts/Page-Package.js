@@ -1594,17 +1594,7 @@ Elm.Component.Header.make = function (_elm) {
             switch (maybeModule.ctor)
             {case "Just":
                return A2($Text.link,
-                 A2($Basics._op["++"],
-                 "/packages/",
-                 A2($Basics._op["++"],
-                 user,
-                 A2($Basics._op["++"],
-                 "/",
-                 A2($Basics._op["++"],
-                 $package,
-                 A2($Basics._op["++"],
-                 "/",
-                 version))))),
+                 "../index.html",
                  $Text.fromString($package));
                case "Nothing":
                return $Text.fromString($package);}
@@ -1832,15 +1822,13 @@ Elm.Component.Package.ModuleList.make = function (_elm) {
          {case "_Tuple2":
             return function () {
                  var url = A2($Basics._op["++"],
-                 rootUrl,
-                 A2($Basics._op["++"],
-                 "/",
                  A2($String.map,
                  function (c) {
                     return _U.eq(c,
                     _U.chr(".")) ? _U.chr("-") : c;
                  },
-                 _v5._0)));
+                 _v5._0),
+                 "/index.html");
                  var viewValue = function (name) {
                     return A4(link,
                     width,
@@ -2076,7 +2064,7 @@ Elm.Component.TopBar.make = function (_elm) {
                       A3($Graphics$Element.image,
                       logoSize,
                       logoSize,
-                      "/assets/elm_logo.svg")))
+                      "../../../../../assets/elm_logo.svg")))
                       ,A2($Graphics$Element.link,
                       "/packages",
                       A2(bar,
@@ -6703,7 +6691,7 @@ Elm.Native.Http.make = function(elm) {
 
         request.onreadystatechange = function(e) {
             if (request.readyState === 4) {
-                response.value = (request.status >= 200 && request.status < 300 ?
+                response.value = ((request.status == 0 || (request.status >= 200 && request.status < 300)) ?
                                   { ctor:'Success', _0:request.responseText } :
                                   { ctor:'Failure', _0:request.status, _1:request.statusText });
                 setTimeout(function() { updateQueue(queue,responses); }, 0);
@@ -11487,6 +11475,9 @@ Elm.Page.Package.make = function (_elm) {
          return $Maybe.Nothing;
       }();
    };
+   var readmeUrl = "README.md";
+   var readme = $Signal.map(extractReadme)($Http.sendGet($Signal.constant(readmeUrl)));
+   var documentationUrl = "documentation.json";
    var context = _P.portIn("context",
    function (v) {
       return typeof v === "object" && "user" in v && "name" in v && "version" in v && "versionList" in v ? {_: {}
@@ -11539,9 +11530,6 @@ Elm.Page.Package.make = function (_elm) {
    })(""),
    "",
    $Signal.subscribe(versionChan))));
-   var documentationUrl = A2($Basics._op["++"],
-   packageUrl(context.version),
-   "/documentation.json");
    var packageInfo = function (modules) {
       return A5($Component$Package$ModuleList.Model,
       context.user,
@@ -11570,10 +11558,6 @@ Elm.Page.Package.make = function (_elm) {
       }();
    };
    var moduleList = $Signal.map(handleResult)($Http.sendGet($Signal.constant(documentationUrl)));
-   var readmeUrl = A2($Basics._op["++"],
-   packageUrl(context.version),
-   "/README.md");
-   var readme = $Signal.map(extractReadme)($Http.sendGet($Signal.constant(readmeUrl)));
    var main = A5($Signal.map4,
    view,
    $Window.dimensions,
