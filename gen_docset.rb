@@ -9,13 +9,23 @@ require 'curb'
 require 'json'
 require 'rubysh'
 
-ROOT = File.absolute_path(File.join(File.dirname(__FILE__), 'docroot'))
-package_template = ERB.new(File.read(File.join(ROOT, 'templates', 'package.erb.html')))
-module_template = ERB.new(File.read(File.join(ROOT, 'templates', 'module.erb.html')))
+SRCROOT = File.absolute_path(File.join(File.dirname(__FILE__), 'docroot'))
+OUTPUT_ROOT = File.absolute_path(File.join(File.dirname(__FILE__), 'output'))
+CONTENTS_ROOT = File.join(OUTPUT_ROOT, 'Elm.docset', 'Contents')
+RESOURCES_ROOT = File.join(CONTENTS_ROOT, 'Resources')
+ROOT = File.join(RESOURCES_ROOT, 'Documents')
+FileUtils::rm_rf(OUTPUT_ROOT)
+FileUtils::mkdir_p(ROOT)
+
+FileUtils::cp File.join(SRCROOT, 'Info.plist'), CONTENTS_ROOT
+FileUtils::cp_r File.join(SRCROOT, 'assets'), File.join(ROOT)
+
+package_template = ERB.new(File.read(File.join(SRCROOT, 'templates', 'package.erb.html')))
+module_template = ERB.new(File.read(File.join(SRCROOT, 'templates', 'module.erb.html')))
 $index_array = []
 
 def build_elm_files
-  Dir.chdir(File.join(ROOT, '..', 'package.elm-lang.org')) do
+  Dir.chdir(File.join(SRCROOT, '..', 'package.elm-lang.org')) do
     { 'frontend/Page/Package.elm' => 'artifacts/Page-Package.js',
       'frontend/Page/Module.elm' => 'artifacts/Page-Module.js'
     }.each do |pair|
@@ -131,11 +141,11 @@ all_packages_dict.each do |package|
   break
 end
 
-File.open(File.join(ROOT, 'index.json'), 'wb') do |f|
-  f.write JSON.pretty_generate($index_array)
-end
+# File.open(File.join(ROOT, 'index.json'), 'wb') do |f|
+#   f.write JSON.pretty_generate($index_array)
+# end
 
 build_elm_files
 
-sqlite = Rubysh('sqlite3', File.join(ROOT, 'docSet.dsidx'), Rubysh.<<< create_index_sql)
+sqlite = Rubysh('sqlite3', File.join(RESOURCES_ROOT, 'docSet.dsidx'), Rubysh.<<< create_index_sql)
 sqlite.run
