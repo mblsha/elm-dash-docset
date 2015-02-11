@@ -4,11 +4,17 @@
 <dict>
 	<key>CFBundleIdentifier</key>
 	<string>Elm</string>
+
 	<key>CFBundleName</key>
 	<string>Elm</string>
+
 	<key>DocSetPlatformFamily</key>
 	<string>Elm</string>
+
 	<key>isDashDocset</key>
+	<true/>
+
+	<key>isJavaScriptEnabled</key>
 	<true/>
 </dict>
 </plist>

@@ -18,6 +18,7 @@ FileUtils::rm_rf(OUTPUT_ROOT)
 FileUtils::mkdir_p(ROOT)
 
 FileUtils::cp File.join(SRCROOT, 'Info.plist'), CONTENTS_ROOT
+FileUtils::cp File.join(SRCROOT, 'icon.png'), File.join(CONTENTS_ROOT, '..')
 FileUtils::cp_r File.join(SRCROOT, 'assets'), File.join(ROOT)
 
 package_template = ERB.new(File.read(File.join(SRCROOT, 'templates', 'package.erb.html')))
