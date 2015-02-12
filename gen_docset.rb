@@ -78,10 +78,11 @@ end
 all_packages = Curl.get('http://library.elm-lang.org/all-packages')
 all_packages_dict = JSON::Ext::Parser.new(all_packages.body_str).parse()
 all_packages_dict.each do |package|
-  name = package['name']
-  version = package['versions'].first
-  # name = 'elm-lang/core'
-  # version = '1.1.0'
+  # name = package['name']
+  # version = package['versions'].first
+  name = 'elm-lang/core'
+  version = '1.1.0'
+  puts name
 
   package_path = File.join(ROOT, 'packages', name, version)
   FileUtils::mkdir_p package_path
@@ -100,6 +101,7 @@ all_packages_dict.each do |package|
   documentation_path = File.join(package_path, 'documentation.json')
 
   documentation = Curl.get("http://library.elm-lang.org/packages/#{name}/#{version}/documentation.json")
+  # FIXME: Need to remove invalid characters, like ^T in mgold/Elm-Multiset
   documentation_json = JSON::Ext::Parser.new(documentation.body_str).parse()
   File.open(documentation_path, 'wb') do |f|
     f.write documentation.body_str
